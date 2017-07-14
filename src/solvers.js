@@ -111,60 +111,109 @@ window.findNQueensSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  var result, matrix;
+  // var result, matrix;
+  // var solutionCount = 0;
+  // // recursive function
+  // var findSolutionCount = function (n, rowIndex, matrix) {
+  //   // if matrix[rowIndex] > n
+  //   if (rowIndex >= n) {
+  //     // return matrix
+  //     return true;
+  //   }
+  //   // for each column in the row
+  //   for (var i = 0; i < n; i++) {
+  //     //  attempt to put a queen there
+  //     if (i !== 0) {
+  //       matrix.togglePiece(rowIndex, i - 1);
+  //     }
+
+  //     matrix.togglePiece(rowIndex, i);
+  //     // if conflict
+  //     if (!matrix.hasAnyQueenConflictsOn(rowIndex, i)) {
+  //       //remove the queen, and proceed to next column
+  //       var solution = findSolutionCount(n, rowIndex + 1, matrix); 
+  //       // matrix.togglePiece(rowIndex, i);
+  //       if (solution) {
+  //         solutionCount++;
+  //         // console.log('solution count = ' + solutionCount + ' solution conflicts? = ' + matrix.hasAnyQueensConflicts());
+  //         // console.log();
+  //       }
+  //     } 
+  //     if (i === n - 1) {
+  //       matrix.togglePiece(rowIndex, i);
+  //     }
+  //     // else {
+  //     //   // if not, call findSolution on next row
+  //     //   findSolution(n, rowIndex + 1, matrix);  
+  //     // }
+  //   }
+  // };
+  // //if N is 0,2, or 3, return dummy input for 0 ==[]
+  // if (n === 0 || n === 1) {
+  //   //if N is 1 return [[1]]
+  //   solutionCount = 1;
+  // } else if (n > 3) {
+  //   //create matrix of N and run findSolution(n,rowIndex,matrix)
+  //   matrix = new Board({'n': n});
+  //   findSolutionCount(n, 0, matrix);
+    
+  //   //loop through results rows and push to solution 
+    
+  // }
+  
+  
+  // START OF NEW IDEA
+  
+  // make an array of n arrays that each have 0, 1, 2, 3... up to n - 1 (these represent open spaces)
+  var openSpaces = {};
+  for (var i = 0; i < n; i++) {
+    openSpaces[i] = {};
+    for (var j = 0; j < n; j++) {
+      openSpaces[i][j] = j;
+    }
+  }
   var solutionCount = 0;
-  // recursive function
-  var findSolutionCount = function (n, rowIndex, matrix) {
-    // if matrix[rowIndex] > n
-    if (rowIndex >= n) {
-      // return matrix
-      var shortenedMatrix = matrix.rows().map(function(row) {
-        return row.indexOf(1);
-      });
-      console.log(shortenedMatrix, rowIndex, n);
+  var solutionCounter = function(n, row, openSpaces) {
+  // for an input row,
+    // if row is off board
+    if (row >= n) {
+      // inc solutionCount
       return true;
     }
-    // for each column in the row
-    for (var i = 0; i < n; i++) {
-      //  attempt to put a queen there
-      if (i !== 0) {
-        matrix.togglePiece(rowIndex, i - 1);
-      }
-
-      matrix.togglePiece(rowIndex, i);
-      // if conflict
-      if (!matrix.hasAnyQueenConflictsOn(rowIndex, i)) {
-        //remove the queen, and proceed to next column
-        var solution = findSolutionCount(n, rowIndex + 1, matrix); 
-        // matrix.togglePiece(rowIndex, i);
-        if (solution) {
-          solutionCount++;
-          // console.log('solution count = ' + solutionCount + ' solution conflicts? = ' + matrix.hasAnyQueensConflicts());
-          // console.log();
+    // if there are spaces at row
+    var rowOpenSpaces = Object.keys(openSpaces[row]);
+    if (rowOpenSpaces.length > 0) {
+      // for each open space s in input row imagine you put a queen there
+      for (var queenSpace = 0; queenSpace < rowOpenSpaces.length; queenSpace++) {
+        // delete each s in lower rows
+        var limitedOpenSpaces = JSON.parse(JSON.stringify(openSpaces));
+        var diagDiff = 1;
+        for (var lowerRow = row + 1; lowerRow < n; lowerRow++) {
+          delete limitedOpenSpaces[lowerRow][rowOpenSpaces[queenSpace]];
+          // delete s - k and s + k, where k starts at 1 and increments
+          delete limitedOpenSpaces[lowerRow][+rowOpenSpaces[queenSpace] - diagDiff];
+          delete limitedOpenSpaces[lowerRow][+rowOpenSpaces[queenSpace] + diagDiff];
+          diagDiff++;
         }
-      } 
-      if (i === n - 1) {
-        matrix.togglePiece(rowIndex, i);
+        // repeat REC for next row
+        var hasSolution = solutionCounter(n, row + 1, limitedOpenSpaces);
+        if (hasSolution) {
+          solutionCount++;
+        }  
       }
-      // else {
-      //   // if not, call findSolution on next row
-      //   findSolution(n, rowIndex + 1, matrix);  
-      // }
+      
     }
+    
   };
-  //if N is 0,2, or 3, return dummy input for 0 ==[]
+  // END OF NEW IDEA (DELETE ONLY THIS SECTION IF THIS IDEA FAILS)
+  
   if (n === 0 || n === 1) {
-    //if N is 1 return [[1]]
-    solutionCount = 1;
-  } else if (n > 3) {
-    //create matrix of N and run findSolution(n,rowIndex,matrix)
-    matrix = new Board({'n': n});
-    findSolutionCount(n, 0, matrix);
-    
-    //loop through results rows and push to solution 
-    
+    return 1;
   }
-
-  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
+  if (n === 2 || n === 3) {
+    return 0;
+  }
+  solutionCounter(n, 0, openSpaces);
+  // console.log('Number of solutions for ' + n + ' queens:', solutionCount);
   return solutionCount;
 };
