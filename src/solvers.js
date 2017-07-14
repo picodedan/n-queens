@@ -111,14 +111,18 @@ window.findNQueensSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  var result, solution, matrix;
-
+  var result, matrix;
+  var solutionCount = 0;
   // recursive function
-  var findSolution = function (n, rowIndex, matrix) {
+  var findSolutionCount = function (n, rowIndex, matrix) {
     // if matrix[rowIndex] > n
     if (rowIndex >= n) {
       // return matrix
-      return matrix;
+      var shortenedMatrix = matrix.rows().map(function(row) {
+        return row.indexOf(1);
+      });
+      console.log(shortenedMatrix, rowIndex, n);
+      return true;
     }
     // for each column in the row
     for (var i = 0; i < n; i++) {
@@ -129,12 +133,14 @@ window.countNQueensSolutions = function(n) {
 
       matrix.togglePiece(rowIndex, i);
       // if conflict
-      if (!matrix.hasAnyQueensConflicts()) {
+      if (!matrix.hasAnyQueenConflictsOn(rowIndex, i)) {
         //remove the queen, and proceed to next column
-        var solution = findSolution(n, rowIndex + 1, matrix); 
+        var solution = findSolutionCount(n, rowIndex + 1, matrix); 
         // matrix.togglePiece(rowIndex, i);
         if (solution) {
-          return solution;
+          solutionCount++;
+          // console.log('solution count = ' + solutionCount + ' solution conflicts? = ' + matrix.hasAnyQueensConflicts());
+          // console.log();
         }
       } 
       if (i === n - 1) {
@@ -147,22 +153,16 @@ window.countNQueensSolutions = function(n) {
     }
   };
   //if N is 0,2, or 3, return dummy input for 0 ==[]
-  if (n === 0 || n === 2 || n === 3) {
-    result = new Board({'n': n});
-    solution = result.rows();
-  } else if (n === 1) {
+  if (n === 0 || n === 1) {
     //if N is 1 return [[1]]
-    solution = [[1]];
-  } else {
+    solutionCount = 1;
+  } else if (n > 3) {
     //create matrix of N and run findSolution(n,rowIndex,matrix)
     matrix = new Board({'n': n});
-    result = findSolution(n, 0, matrix);
-
+    findSolutionCount(n, 0, matrix);
+    
     //loop through results rows and push to solution 
-    solution = [];
-    for (var i = 0; i < n; i++) {
-      solution.push(result.get(i));
-    }
+    
   }
 
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
